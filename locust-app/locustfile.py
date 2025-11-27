@@ -72,7 +72,6 @@ class FlaskSwarmUser(HttpUser):
                 "sw-keys=custom-sw-from:herbert,baz:qux;ts={}".format(1234567890)
             ),
         }
-
         self.client.get(
             "http://nginx-uninstrumented/request",
             name="uninstrumented",
