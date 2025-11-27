@@ -74,22 +74,22 @@ class FlaskSwarmUser(HttpUser):
         }
 
         self.client.get(
-            "http://nginx-uninstrumented/sdk",
+            "http://nginx-uninstrumented/request",
             name="uninstrumented",
             headers=http_headers,
         )
         self.client.get(
-            "http://nginx-otel/sdk",
+            "http://nginx-otel/request",
             name="otel",
             headers=http_headers,
         )
         self.client.get(
-            "http://nginx-alpha/sdk",
+            "http://nginx-alpha/request",
             name="alpha",
             headers=http_headers,
         )
         self.client.get(
-            "http://nginx-dev/sdk",
+            "http://nginx-dev/request",
             name="dev",
             headers=http_headers,
         )
