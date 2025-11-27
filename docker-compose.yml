@@ -25,8 +25,8 @@ services:
     image: otel/opentelemetry-collector-contrib:latest
     user: "0"  # to access docker.sock
     environment:
-      - API_TOKEN=${NA_01_STG_TOKEN}
-      - OTEL_COLLECTOR=${NA_01_STG_OTEL_COLLECTOR}
+      - API_TOKEN=${OTEL_TOKEN}
+      - OTEL_COLLECTOR=${OTEL_COLLECTOR}
     command: [ "--config=/etc/otel-collector-config.yml" ]
     ports:
       - "4317:4317"   # OTLP gRPC receiver
