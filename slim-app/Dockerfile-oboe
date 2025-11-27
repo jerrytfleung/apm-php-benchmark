@@ -1,0 +1,36 @@
+# Stage 1: Build PHP dependencies
+FROM composer:2 AS composer_build
+
+# Stage 2: Build the PHP-FPM application image
+FROM php:8.4-fpm-alpine
+
+COPY --from=composer_build /usr/bin/composer /usr/local/bin/composer
+
+RUN apk add --no-cache --virtual .build-deps $PHPIZE_DEPS
+
+RUN pecl install opentelemetry && \
+    docker-php-ext-enable opentelemetry
+
+RUN apk del .build-deps
+
+# APM agent
+RUN apk add build-base
+RUN curl -sSO https://agent-binaries.cloud.solarwinds.com/apm/php/latest/solarwinds-apm-php.sh
+RUN sh solarwinds-apm-php.sh \
+      --service-key=token:apm-php-benchmark-php-fpm-oboe \
+      --collector=collector \
+      --url=https://agent-binaries.cloud.solarwinds.com/apm/php \
+      --version=latest
+
+WORKDIR /var/www/html
+
+# Copy application code
+COPY index.php .
+COPY composer-otel.json ./composer.json
+
+RUN composer install
+
+# Expose port for PHP-FPM
+EXPOSE 9000
+
+CMD ["php-fpm"]
