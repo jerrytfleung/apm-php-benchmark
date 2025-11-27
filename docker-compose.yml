@@ -23,6 +23,7 @@ x-logging-resource: &logging-resource
 services:
   otel-collector:
     image: otel/opentelemetry-collector-contrib:latest
+    logging: *logging-resource
     user: "0"  # to access docker.sock
     environment:
       - API_TOKEN=${OTEL_TOKEN}
