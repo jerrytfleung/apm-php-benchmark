@@ -25,7 +25,7 @@ $logger->pushHandler($handler);
 
 $tracer = Globals::tracerProvider()->getTracer('app');
 $global_meter_provider = Globals::meterProvider();
-$my_meter = $global_meter_provider->getMeter('jerry-test-meter', "123");
+$my_meter = $global_meter_provider->getMeter('jerry-test-meter', '123');
 $test_counter_a = $my_meter->createCounter(
     'trace.service.jerry-test-counter-a',
     'SDK-defined counter by user\'s service');
@@ -48,11 +48,11 @@ $app->get('/healthcheck', function (Request $request, Response $response) {
 });
 
 $app->get('/request', function (Request $request, Response $response) use ($logger) {
-    $logger->info("Sending request to example.com");
+    $logger->info('Sending request to example.com');
     $client = new Client();
-    $resp = $client->request('GET', "http://example.com");
-    $logger->info("Used request headers: %s", $resp->getHeaders());
-    $logger->info("Received response from example.com");
+    $resp = $client->request('GET', 'http://example.com');
+    $logger->info('Used', ['request headers' => $resp->getHeaders()]);
+    $logger->info('Received response from example.com');
     $response->getBody()->write($resp->getBody()->getContents());
     return $response;
 });
@@ -60,27 +60,27 @@ $app->get('/request', function (Request $request, Response $response) use ($logg
 $app->get('/metrics', function (Request $request, Response $response) use ($logger, $test_counter_a, $test_counter_b, $test_counter_c, $test_histogram, $global_meter_provider) {
     # here for predictable response_time metrics
     sleep(1);
-    $logger->info("Incrementing counter, recording histogram");
+    $logger->info('Incrementing counter, recording histogram');
     $test_counter_a->add(1);
     $test_counter_b->add(1);
     $test_counter_c->add(1);
     $test_histogram->record(
         500,
         [
-            "sw.transaction" => "jerry-test"
+            'sw.transaction' => 'jerry-test'
         ]
     );
     if ($global_meter_provider instanceof MeterProviderInterface) {
         $global_meter_provider->forceFlush();
     }
-    $response->getBody()->write("Finished adding and recording");
+    $response->getBody()->write('Finished adding and recording');
     return $response;
 });
 
 $app->get('/logs', function (Request $request, Response $response) use ($logger) {
-    $logger->error("An error log by app-side app logger");
-    $logger->warning("A warning log by app-side app logger");
-    $logger->info("An info log by app-side app logger");
+    $logger->error('An error log by app-side app logger');
+    $logger->warning('A warning log by app-side app logger');
+    $logger->info('An info log by app-side app logger');
     $response->getBody()->write('Done');
     return $response;
 });
@@ -89,9 +89,8 @@ $app->get('/sdk', function (Request $request, Response $response) use ($logger, 
     $main = $tracer->spanBuilder('my_sdk_manual_span')->startSpan();
     $mainScope = $main->activate();
     $client = new Client();
-    $resp = $client->request('GET', "http://example.com");
-    $logger->debug("Made manual span then request to example.com with headers:");
-    $logger->debug("%s", $resp->getHeaders());
+    $resp = $client->request('GET', 'http://example.com');
+    $logger->debug('Made manual span then request to example.com with headers', ['headers' => $resp->getHeaders()]);
     $response->getBody()->write('Done');
     $mainScope->detach();
     $main->end();
@@ -120,7 +119,7 @@ function make_ten_spans(TracerInterface $tracer)
     $manual_09Scope = $manual_09->activate();
     $manual_10 = $tracer->spanBuilder('manual_10')->startSpan();
     $manual_10Scope = $manual_10->activate();
-    print("Made 10 Otel spans");
+    print('Made 10 Otel spans');
     $manual_10Scope->detach();
     $manual_10->end();
     $manual_09Scope->detach();
@@ -150,20 +149,20 @@ $app->get('/complex', function (Request $request, Response $response) use ($logg
     for ($i = 0; $i < 10; $i++) {
          make_ten_spans($tracer);
     }
-    $logger->info("Incrementing counter, recording histogram");
+    $logger->info('Incrementing counter, recording histogram');
     $test_counter_a->add(1);
     $test_counter_b->add(1);
     $test_counter_c->add(1);
     $test_histogram->record(
         500,
         [
-            "sw.transaction" => "jerry-test"
+            'sw.transaction' => 'jerry-test'
         ]
     );
     if ($global_meter_provider instanceof MeterProviderInterface) {
         $global_meter_provider->forceFlush();
     }
-    throw new Exception("Oops exception was raised");
+    throw new Exception('Oops exception was raised');
 });
 
 $app->run();
