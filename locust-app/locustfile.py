@@ -45,6 +45,7 @@ http_response_time = otel_meter.create_histogram(
 
 requests_tracker = {
     "uninstrumented": {"request_count" : 0, "request_time" : 0 },
+    "oboe": {"request_count" : 0, "request_time" : 0 },
     "otel": {"request_count" : 0, "request_time" : 0 },
     "alpha": {"request_count" : 0, "request_time" : 0 },
     "dev": {"request_count" : 0, "request_time" : 0 }
@@ -75,6 +76,11 @@ class FlaskSwarmUser(HttpUser):
         self.client.get(
             "http://nginx-uninstrumented/request",
             name="uninstrumented",
+            headers=http_headers,
+        )
+        self.client.get(
+            "http://nginx-oboe/request",
+            name="oboe",
             headers=http_headers,
         )
         self.client.get(
