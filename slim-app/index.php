@@ -51,10 +51,6 @@ $app->get('/request', function (Request $request, Response $response) use ($logg
     $logger->info('Sending request to example.com');
     $client = new Client();
     $resp = $client->request('GET', 'http://example.com');
-    $headers = $resp->getHeaders();
-    $logger->info('Used headers: ' . implode(';', array_map(function ($k, $v) {
-                return "$k=$v";
-            }, array_keys($headers), $headers));
     $logger->info('Received response from example.com');
     $response->getBody()->write($resp->getBody()->getContents());
     return $response;
@@ -93,10 +89,7 @@ $app->get('/sdk', function (Request $request, Response $response) use ($logger, 
     $mainScope = $main->activate();
     $client = new Client();
     $resp = $client->request('GET', 'http://example.com');
-    $headers = $resp->getHeaders();
-    $logger->debug('Made manual span then request to example.com with headers' . implode(';', array_map(function ($k, $v) {
-                return "$k=$v";
-            }, array_keys($headers), $headers));
+    $logger->debug('Made manual span then request to example.com');
     $response->getBody()->write('Done');
     $mainScope->detach();
     $main->end();
