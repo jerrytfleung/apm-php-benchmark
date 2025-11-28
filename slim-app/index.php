@@ -161,7 +161,8 @@ $app->get('/complex', function (Request $request, Response $response) use ($logg
     if ($global_meter_provider instanceof MeterProviderInterface) {
         $global_meter_provider->forceFlush();
     }
-    throw new Exception('Oops exception was raised');
+    $response->getBody()->write('Done');
+    return $response;
 });
 
 $app->run();
