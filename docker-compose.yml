@@ -1,4 +1,12 @@
 services:
+  apm-setting-ticker:
+    image: ghcr.io/jerrytfleung/apm-setting-ticker
+    environment:
+      - SW_APM_COLLECTOR=${SW_APM_COLLECTOR:-collector}
+      - SW_APM_SERVICE_KEY=${SW_APM_TOKEN:-token}:apm-php-benchmark-php-fpm-alpha
+      - HOSTNAME=php-fpm-alpha
+    ports:
+      - "8080:8080"
   otel-collector-locust:
     image: otel/opentelemetry-collector-contrib:latest
     user: "0"  # to access docker.sock
@@ -80,6 +88,9 @@ services:
     build:
       context: slim-app
       dockerfile: Dockerfile-alpha
+    hostname: php-fpm-alpha
+    depends_on:
+      - apm-setting-ticker
     environment:
       - OTEL_PHP_AUTOLOAD_ENABLED=true
       - OTEL_LOG_LEVEL=warning
@@ -89,7 +100,7 @@ services:
       - OTEL_EXPORTER_OTLP_ENDPOINT=${OTEL_EXPORTER_OTLP_ENDPOINT:-http://otel-collector-alpha:4318}
       - OTEL_SERVICE_NAME=apm-php-benchmark-php-fpm-alpha
       - OTEL_TRACES_SAMPLER=solarwinds_http
-      - SW_APM_COLLECTOR=${SW_APM_COLLECTOR:-collector}
+      - SW_APM_COLLECTOR=apm-setting-ticker:8080
       - SW_APM_SERVICE_KEY=${SW_APM_TOKEN:-token}:apm-php-benchmark-php-fpm-alpha
       - OTEL_PROPAGATORS=baggage,tracecontext,swotracestate,xtraceoptions
       - OTEL_EXPERIMENTAL_RESPONSE_PROPAGATORS=xtrace,xtraceoptionsresponse
