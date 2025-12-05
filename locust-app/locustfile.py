@@ -55,49 +55,79 @@ requests_tracker = {
 class FlaskSwarmUser(HttpUser):
     wait_time = between(0.25, 0.5)  # 0.25-0.5 seconds
 
+    # @task
+    # def request_uninstrumented(self):
+    #     self.client.get(
+    #         "http://nginx-uninstrumented/complex",
+    #         name="uninstrumented",
+    #     )
+    # @task
+    # def request_oboe(self):
+    #     self.client.get(
+    #         "http://nginx-oboe/complex",
+    #         name="oboe",
+    #     )
     @task
-    def request_metrics_endpoints(self):
-        # Headers to execute more custom sampling logic if APM-instrumented
-        # with new otel context for each request
-        trace_id = "".join(random.choices("0123456789abcdef", k=32))
-        span_id = "".join(random.choices("0123456789abcdef", k=16))
-        tracestate_span_id = "".join(random.choices("0123456789abcdef", k=16))
-        trace_flags = "01"
-        traceparent = "00-{}-{}-{}".format(trace_id, span_id, trace_flags)
-        tracestate = "sw={}-{}".format(tracestate_span_id, trace_flags)
-        http_headers = {
-            "traceparent": traceparent,
-            "tracestate": tracestate,
-            "x-trace-options": (
-                "trigger-trace;custom-from=frank;foo=bar;"
-                "sw-keys=custom-sw-from:herbert,baz:qux;ts={}".format(1234567890)
-            ),
-        }
-        self.client.get(
-            "http://nginx-uninstrumented/complex",
-            name="uninstrumented",
-            headers=http_headers,
-        )
-        self.client.get(
-            "http://nginx-oboe/complex",
-            name="oboe",
-            headers=http_headers,
-        )
+    def request_otel(self):
         self.client.get(
             "http://nginx-otel/complex",
             name="otel",
-            headers=http_headers,
         )
+    @task
+    def request_alpha(self):
         self.client.get(
             "http://nginx-alpha/complex",
             name="alpha",
-            headers=http_headers,
         )
-        self.client.get(
-            "http://nginx-dev/complex",
-            name="dev",
-            headers=http_headers,
-        )
+    # @task
+    # def request_dev(self):
+    #     self.client.get(
+    #         "http://nginx-dev/complex",
+    #         name="dev",
+    #     )
+    # @task
+    # def request_metrics_endpoints(self):
+    #     # Headers to execute more custom sampling logic if APM-instrumented
+    #     # with new otel context for each request
+    #     trace_id = "".join(random.choices("0123456789abcdef", k=32))
+    #     span_id = "".join(random.choices("0123456789abcdef", k=16))
+    #     tracestate_span_id = "".join(random.choices("0123456789abcdef", k=16))
+    #     trace_flags = "01"
+    #     traceparent = "00-{}-{}-{}".format(trace_id, span_id, trace_flags)
+    #     tracestate = "sw={}-{}".format(tracestate_span_id, trace_flags)
+    #     http_headers = {
+    #         "traceparent": traceparent,
+    #         "tracestate": tracestate,
+    #         "x-trace-options": (
+    #             "trigger-trace;custom-from=frank;foo=bar;"
+    #             "sw-keys=custom-sw-from:herbert,baz:qux;ts={}".format(1234567890)
+    #         ),
+    #     }
+    #     # self.client.get(
+    #     #     "http://nginx-uninstrumented/complex",
+    #     #     name="uninstrumented",
+    #     #     headers=http_headers,
+    #     # )
+    #     # self.client.get(
+    #     #     "http://nginx-oboe/complex",
+    #     #     name="oboe",
+    #     #     headers=http_headers,
+    #     # )
+    #     self.client.get(
+    #         "http://nginx-otel/complex",
+    #         name="otel",
+    #         headers=http_headers,
+    #     )
+    #     self.client.get(
+    #         "http://nginx-alpha/complex",
+    #         name="alpha",
+    #         headers=http_headers,
+    #     )
+    #     self.client.get(
+    #         "http://nginx-dev/complex",
+    #         name="dev",
+    #         headers=http_headers,
+    #     )
 
 
 @events.request.add_listener
