@@ -1,0 +1,40 @@
+# Stage 1: Build PHP dependencies
+FROM composer:2 AS composer_build
+
+# Stage 2: Build the PHP-FPM application image
+FROM php:8.4-fpm-alpine
+
+COPY --from=composer_build /usr/bin/composer /usr/local/bin/composer
+
+# RUN apk add --no-cache --virtual .build-deps $PHPIZE_DEPS curl-dev git
+RUN apk add $PHPIZE_DEPS curl-dev git
+
+RUN pecl install opentelemetry && \
+    docker-php-ext-enable opentelemetry
+
+RUN git clone https://github.com/jerrytfleung/ext-swo.git
+
+RUN cd ext-swo/ext && \
+    phpize && \
+    ./configure && \
+    make && \
+    make install && \
+    docker-php-ext-enable swo
+
+# RUN apk del .build-deps
+RUN echo "swo.collector = apm.collector.na-01.st-ssp.solarwinds.com" >> /usr/local/etc/php/conf.d/docker-php-ext-swo.ini
+RUN echo "swo.service_key = token:phpextension" >> /usr/local/etc/php/conf.d/docker-php-ext-swo.ini
+
+
+WORKDIR /var/www/html
+
+# Copy application code
+COPY index.php .
+COPY composer-extension.json ./composer.json
+
+RUN composer install
+
+# Expose port for PHP-FPM
+EXPOSE 9000
+
+CMD ["php-fpm"]
