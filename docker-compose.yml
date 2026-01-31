@@ -1,17 +1,4 @@
 services:
-  local-http:
-    image: hashicorp/http-echo:latest
-    command: ["-text", "{\"value\":1000000,\"flags\":\"SAMPLE_START,SAMPLE_THROUGH_ALWAYS,SAMPLE_BUCKET_ENABLED,TRIGGER_TRACE\",\"timestamp\":1768001828,\"ttl\":120,\"arguments\":{\"BucketCapacity\":2,\"BucketRate\":1,\"TriggerRelaxedBucketCapacity\":20,\"TriggerRelaxedBucketRate\":1,\"TriggerStrictBucketCapacity\":6,\"TriggerStrictBucketRate\":0.1,\"SignatureKey\":\"a9012f2c6b25d1f5d8b87ed1a3858abd230cac7c99e8ec2aeacfaba6aa123456\"}}"]
-    ports:
-      - "5678:5678"
-  apm-setting-ticker:
-    image: ghcr.io/jerrytfleung/apm-setting-ticker
-    environment:
-      - SW_APM_COLLECTOR=${SW_APM_COLLECTOR:-collector}
-      - SW_APM_SERVICE_KEY=${SW_APM_TOKEN:-token}:apm-php-benchmark-php-fpm-alpha
-      - HOSTNAME=php-fpm-alpha
-    ports:
-      - "8080:8080"
   otel-collector-locust:
     image: otel/opentelemetry-collector-contrib:latest
     user: "0"  # to access docker.sock
@@ -90,36 +77,10 @@ services:
       - OTEL_TRACES_SAMPLER=always_on
       - OTEL_RESOURCE_ATTRIBUTES=sw.data.module=apm,sw.apm.version=0.0.0,sw.transaction=complex_trace  # hard-code transaction for all requests to match APM-instrumented apps
 
-#  php-fpm-alpha:
-#    build:
-#      context: slim-app
-#      dockerfile: Dockerfile-alpha
-#    hostname: php-fpm-alpha
-#    environment:
-#      - OTEL_PHP_AUTOLOAD_ENABLED=true
-#      - OTEL_LOG_LEVEL=debug
-#      - OTEL_TRACES_EXPORTER=otlp
-#      - OTEL_METRICS_EXPORTER=none
-#      - OTEL_LOGS_EXPORTER=none
-#      - OTEL_EXPORTER_OTLP_ENDPOINT=${OTEL_EXPORTER_OTLP_ENDPOINT:-http://otel-collector-alpha:4318}
-#      - OTEL_SERVICE_NAME=apm-php-benchmark-php-fpm-alpha
-#      - OTEL_TRACES_SAMPLER=solarwinds_http
-#      # - SW_APM_COLLECTOR=${SW_APM_COLLECTOR:-collector}
-#      - SW_APM_COLLECTOR=apm-setting-ticker:8080
-#      - SW_APM_SERVICE_KEY=${SW_APM_TOKEN:-token}:apm-php-benchmark-php-fpm-alpha
-#      - OTEL_PROPAGATORS=baggage,tracecontext,swotracestate,xtraceoptions
-#      - OTEL_EXPERIMENTAL_RESPONSE_PROPAGATORS=xtrace,xtraceoptionsresponse
-#    depends_on:
-#      - local-http
-#      - apm-setting-ticker
-#    volumes:
-#      - /tmp/solarwinds-apm-settings.json:/tmp/solarwinds-apm-settings.json
-
   php-fpm-alpha:
     build:
       context: slim-app
-      dockerfile: Dockerfile-extension
-    hostname: php-fpm-extension
+      dockerfile: Dockerfile-cache
     environment:
       - OTEL_PHP_AUTOLOAD_ENABLED=true
       - OTEL_LOG_LEVEL=debug
@@ -127,9 +88,9 @@ services:
       - OTEL_METRICS_EXPORTER=none
       - OTEL_LOGS_EXPORTER=none
       - OTEL_EXPORTER_OTLP_ENDPOINT=${OTEL_EXPORTER_OTLP_ENDPOINT:-http://otel-collector-alpha:4318}
-      - OTEL_SERVICE_NAME=apm-php-benchmark-php-fpm-extension
+      - OTEL_SERVICE_NAME=apm-php-benchmark-php-fpm-cache
       - OTEL_TRACES_SAMPLER=solarwinds_http
-      - SW_APM_SERVICE_KEY=${SW_APM_TOKEN:-token}:apm-php-benchmark-php-fpm-extension
+      - SW_APM_SERVICE_KEY=${SW_APM_TOKEN:-token}:apm-php-benchmark-php-fpm-cache
       - OTEL_PROPAGATORS=baggage,tracecontext,swotracestate,xtraceoptions
       - OTEL_EXPERIMENTAL_RESPONSE_PROPAGATORS=xtrace,xtraceoptionsresponse
 
@@ -147,4 +108,4 @@ services:
         condition: service_healthy
       nginx-alpha:
         condition: service_healthy
-    command: locust --headless -u 100 --spawn-rate 5 --host http://0.0.0.0:8000
+    command: locust --headless -u 1 --spawn-rate 5 --host http://0.0.0.0:8000
