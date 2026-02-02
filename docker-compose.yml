@@ -90,7 +90,8 @@ services:
       - OTEL_EXPORTER_OTLP_ENDPOINT=${OTEL_EXPORTER_OTLP_ENDPOINT:-http://otel-collector-alpha:4318}
       - OTEL_SERVICE_NAME=apm-php-benchmark-php-fpm-cache
       - OTEL_TRACES_SAMPLER=solarwinds_http
-      - SW_APM_SERVICE_KEY=${SW_APM_TOKEN:-token}:apm-php-benchmark-php-fpm-cache
+      - SW_APM_COLLECTOR=${SW_APM_COLLECTOR_ALPHA:-collector}
+      - SW_APM_SERVICE_KEY=${SW_APM_TOKEN_ALPHA:-token}:apm-php-benchmark-php-fpm-cache
       - OTEL_PROPAGATORS=baggage,tracecontext,swotracestate,xtraceoptions
       - OTEL_EXPERIMENTAL_RESPONSE_PROPAGATORS=xtrace,xtraceoptionsresponse
 
@@ -108,4 +109,4 @@ services:
         condition: service_healthy
       nginx-alpha:
         condition: service_healthy
-    command: locust --headless -u 1 --spawn-rate 5 --host http://0.0.0.0:8000
+    command: locust --headless -u 100 --spawn-rate 5 --host http://0.0.0.0:8000
