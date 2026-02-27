@@ -14,7 +14,7 @@ RUN pecl install opentelemetry && \
 RUN wget https://github.com/php/pie/releases/latest/download/pie.phar
 RUN chmod +x pie.phar
 RUN mv pie.phar /usr/local/bin/pie
-RUN pie install solarwinds/apm_ext:dev-cache
+RUN pie install solarwinds/apm_ext
 
 WORKDIR /var/www/html
 
