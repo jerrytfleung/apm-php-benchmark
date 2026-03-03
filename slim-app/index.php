@@ -158,9 +158,7 @@ $app->get('/complex', function (Request $request, Response $response) use ($logg
             'sw.transaction' => 'jerry-test'
         ]
     );
-    if ($global_meter_provider instanceof MeterProviderInterface) {
-        $global_meter_provider->forceFlush();
-    }
+
     $response->getBody()->write('Done');
     return $response;
 });

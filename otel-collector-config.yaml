@@ -21,12 +21,12 @@ service:
     traces:
       receivers: [otlp/notls]
       processors: [batch]
-      exporters: [debug]
+      exporters: [otlp]
     metrics:
       receivers: [otlp/notls]
       processors: [batch]
-      exporters: [debug]
+      exporters: [otlp]
     logs:
       receivers: [otlp/notls]
       processors: [batch]
-      exporters: [debug]
+      exporters: [otlp]

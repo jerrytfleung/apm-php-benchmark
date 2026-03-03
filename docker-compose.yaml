@@ -5,9 +5,9 @@ services:
     environment:
       - API_TOKEN=${OTEL_TOKEN}
       - OTEL_COLLECTOR=${OTEL_COLLECTOR}
-    command: [ "--config=/etc/otel-collector-config.yml" ]
+    command: [ "--config=/etc/otel-collector-config.yaml" ]
     volumes:
-      - ./otel-collector-config.yml:/etc/otel-collector-config.yml
+      - ./otel-collector-config.yaml:/etc/otel-collector-config.yaml
       - /var/run/docker.sock:/var/run/docker.sock:ro
 
   otel-collector-otel:
@@ -16,21 +16,17 @@ services:
     environment:
       - API_TOKEN=${OTEL_TOKEN}
       - OTEL_COLLECTOR=${OTEL_COLLECTOR}
-    command: [ "--config=/etc/otel-collector-config.yml" ]
+    command: [ "--config=/etc/otel-collector-config.yaml" ]
     volumes:
-      - ./otel-collector-config.yml:/etc/otel-collector-config.yml
+      - ./otel-collector-config.yaml:/etc/otel-collector-config.yaml
       - /var/run/docker.sock:/var/run/docker.sock:ro
 
   otel-collector-alpha:
-    image: otel/opentelemetry-collector-contrib:latest
-    user: "0"  # to access docker.sock
+    image: solarwinds/solarwinds-otel-collector:latest-verified
     environment:
-      - API_TOKEN=${OTEL_TOKEN}
-      - OTEL_COLLECTOR=${OTEL_COLLECTOR}
-    command: [ "--config=/etc/otel-collector-config.yml" ]
+      - SOLARWINDS_TOKEN=${SW_APM_TOKEN_ALPHA}
     volumes:
-      - ./otel-collector-config.yml:/etc/otel-collector-config.yml
-      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./swotel-collector-config.yaml:/opt/default-config.yaml
 
   nginx-otel:
     image: nginx:latest
@@ -80,18 +76,16 @@ services:
   php-fpm-alpha:
     build:
       context: slim-app
-      dockerfile: Dockerfile-cache
+      dockerfile: Dockerfile-alpha
     environment:
       - OTEL_PHP_AUTOLOAD_ENABLED=true
       - OTEL_LOG_LEVEL=debug
-      - OTEL_TRACES_EXPORTER=otlp
-      - OTEL_METRICS_EXPORTER=none
-      - OTEL_LOGS_EXPORTER=none
       - OTEL_EXPORTER_OTLP_ENDPOINT=${OTEL_EXPORTER_OTLP_ENDPOINT:-http://otel-collector-alpha:4318}
-      - OTEL_SERVICE_NAME=apm-php-benchmark-php-fpm-cache
+      - OTEL_SERVICE_NAME=apm-php-benchmark-php-fpm-alpha
       - OTEL_TRACES_SAMPLER=solarwinds_http
+      - OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE=delta
       - SW_APM_COLLECTOR=${SW_APM_COLLECTOR_ALPHA:-collector}
-      - SW_APM_SERVICE_KEY=${SW_APM_TOKEN_ALPHA:-token}:apm-php-benchmark-php-fpm-cache
+      - SW_APM_SERVICE_KEY=${SW_APM_TOKEN_ALPHA:-token}:apm-php-benchmark-php-fpm-alpha
       - OTEL_PROPAGATORS=baggage,tracecontext,swotracestate,xtraceoptions
       - OTEL_EXPERIMENTAL_RESPONSE_PROPAGATORS=xtrace,xtraceoptionsresponse
 
